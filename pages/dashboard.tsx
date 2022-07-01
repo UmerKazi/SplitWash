@@ -14,7 +14,11 @@ const Dashboard: NextPage = () => {
     const [carWashUsed, setCarWashUsed] = React.useState(false);
     const [carWashUser, setCarWashUser] = React.useState("");
     const [clicked, setClicked] = React.useState(false);
-    const today = new Date().toISOString().slice(0, 10)
+    const endDate = new Date('09/13/2022')
+    const todayDate = new Date()
+    const today = todayDate.toISOString().slice(0, 10)
+    const difference = endDate.getTime() - todayDate.getTime()
+    const totalDays = Math.ceil(difference / (1000 * 3600 * 24))
     const useWash = () => {
         setClicked(true);
         useCarWash(currUser);
@@ -107,6 +111,14 @@ const Dashboard: NextPage = () => {
                     </Typography>
                 </Box>
             )}
+            <Box style={{ boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)', borderRadius: '15px', marginLeft: '15px', marginRight: '15px', marginTop: '20px', textAlign: 'center', width: '390px' }}>
+                <Typography style={{ fontFamily: 'Futura, sans serif', fontSize: '24px', marginLeft: '15px', marginRight: '15px' }}>
+                    <br />
+                    {totalDays} Days Remaining
+                    <br />
+                    <br />
+                </Typography>
+            </Box>
             <br />
             <br />
         </main>

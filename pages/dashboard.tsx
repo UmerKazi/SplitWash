@@ -77,7 +77,7 @@ const Dashboard: NextPage = () => {
                         <Image src={abeerCar} width="350" height="115" />
                         <br />
                         <Typography style={{ fontWeight: 'bold' }}>
-                            2021 Ford Mustang GT
+                            2022 Ford Mustang GT
                         </Typography>
                         <br />
                     </Box>

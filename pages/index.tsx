@@ -23,7 +23,7 @@ const Home: NextPage = () => {
     router.push("/dashboard", undefined, { shallow: true });
   };
   React.useEffect(() => {
-    if (localStorage && ((localStorage.getItem("user") !== "umer") || (localStorage.getItem("user") !== "abeer"))) {
+    if (localStorage && ((localStorage.getItem("user") == "umer") || (localStorage.getItem("user") == "abeer"))) {
       router.push("/dashboard", undefined, { shallow: true });
     }
   }, [])

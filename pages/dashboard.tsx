@@ -107,6 +107,8 @@ const Dashboard: NextPage = () => {
                     </Typography>
                 </Box>
             )}
+            <br />
+            <br />
         </main>
     )
 }

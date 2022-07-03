@@ -16,7 +16,11 @@ const Dashboard: NextPage = () => {
     const [clicked, setClicked] = React.useState(false);
     const endDate = new Date('09/13/2022')
     const todayDate = new Date()
-    const today = todayDate.toISOString().slice(0, 10)
+    todayDate.setTime(todayDate.getTime() + todayDate.getTimezoneOffset() * 60 * 1000);
+    const offset = -240;
+    const todayDateEST = new Date(todayDate.getTime() + offset * 60 * 1000);
+    const stringDate = todayDateEST.toString();
+    const today = todayDateEST.toISOString().slice(0, 10)
     const difference = endDate.getTime() - todayDate.getTime()
     const totalDays = Math.ceil(difference / (1000 * 3600 * 24))
     const useWash = () => {
@@ -50,7 +54,7 @@ const Dashboard: NextPage = () => {
                     <Box style={{ boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)', borderRadius: '15px', marginLeft: '15px', marginRight: '15px', marginTop: '20px', textAlign: 'center', minWidth: '390px' }}>
                         <br />
                         <Typography style={{ textAlign: 'center', fontSize: '30px', fontFamily: 'futura, sans serif', fontWeight: '600' }}>
-                            Welcome Umer
+                            Welcome Umer <br /> {stringDate}
                         </Typography>
                         <br />
                     </Box>

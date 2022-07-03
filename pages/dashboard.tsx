@@ -54,7 +54,7 @@ const Dashboard: NextPage = () => {
                     <Box style={{ boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)', borderRadius: '15px', marginLeft: '15px', marginRight: '15px', marginTop: '20px', textAlign: 'center', minWidth: '390px' }}>
                         <br />
                         <Typography style={{ textAlign: 'center', fontSize: '30px', fontFamily: 'futura, sans serif', fontWeight: '600' }}>
-                            Welcome Umer <br /> {stringDate}
+                            Welcome Umer
                         </Typography>
                         <br />
                     </Box>
@@ -123,6 +123,10 @@ const Dashboard: NextPage = () => {
                     <br />
                 </Typography>
             </Box>
+            <br />
+            <Typography style={{ width: '380px', textAlign: 'center', color: 'grey' }}>
+                Current Time Is: {stringDate}
+            </Typography>
             <br />
             <br />
         </main>

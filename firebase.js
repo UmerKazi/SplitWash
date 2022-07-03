@@ -52,12 +52,17 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 const useCarWash = async (name) => {
-    const today = new Date().toISOString().slice(0, 10)
+    const todayDate = new Date()
+    todayDate.setTime(todayDate.getTime() + todayDate.getTimezoneOffset() * 60 * 1000);
+    const offset = -240;
+    const todayDateEST = new Date(todayDate.getTime() + offset * 60 * 1000);
+    const today = todayDateEST.toISOString().slice(0, 10);
     try {
       await setDoc(doc(db, "days", today), {
         name: name,
         used: true,
         date: today,
+        fullDate: todayDateEST,
       })
     } catch (err) {
       console.log(err);

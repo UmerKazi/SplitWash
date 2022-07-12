@@ -79,7 +79,44 @@ const useCarWash = async (name) => {
     return days;
   }
 
+  const registerWithEmailAndPassword = async (email, password, firstName, lastName, phoneNumber) => {
+    try {
+      const res = await createUserWithEmailAndPassword(auth, email, password);
+      const user = res.user;
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        displayName: firstName + ' ' +  lastName,
+        firstName,
+        lastName,
+        phoneNumber,
+        email,
+        photoURL: 'https://i.pinimg.com/474x/f1/da/a7/f1daa70c9e3343cebd66ac2342d5be3f.jpg',
+      })
+      await updateProfile(user, {
+        'displayName': firstName
+      });
+    } catch (err) {
+      console.log(err);
+    }
+};
+
+const logInWithEmailAndPassword = async (email, password) => {
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+  } catch (err) {
+    if (err == 'FirebaseError: Firebase: Error (auth/wrong-password).') {
+      alert("Incorrect Password, Please Try Again");
+    } else if (err == "FirebaseError: Firebase: Access to this account has been temporarily disabled due to many failed login attempts. You can immediately restore it by resetting your password or you can try again later. (auth/too-many-requests).") {
+      alert("Too Many Failed Login Attempts, Please Reset Your Password or Try Again Later");
+    } else {
+      alert(err);
+    }
+  }
+};
+
   export {
     useCarWash,
     getCarWash,
+    registerWithEmailAndPassword,
+    logInWithEmailAndPassword
   }

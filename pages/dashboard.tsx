@@ -2,14 +2,17 @@ import React from 'react'
 import { Button, Typography } from '@mui/material'
 import { Box } from '@mui/system'
 import type { NextPage } from 'next'
-import { useCarWash, getCarWash } from '../firebase.js';
+import { useCarWash, getCarWash, logout, auth, getUserInfo } from '../firebase.js';
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
 import umerCar from '../assets/g20.png';
 import abeerCar from '../assets/gt.png';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { useRouter } from 'next/router';
 
 
 const Dashboard: NextPage = () => {
+    const router = useRouter();
     const [currUser, setCurrUser] = React.useState("");
     const [carWashUsed, setCarWashUsed] = React.useState(false);
     const [carWashUser, setCarWashUser] = React.useState("");
@@ -47,50 +50,46 @@ const Dashboard: NextPage = () => {
         })
     }, [clicked])
 
+    const [user, loading, error] = useAuthState(auth);
+    const [userInfo, setUserInfo] = React.useState({});
+
+    React.useEffect(() => {
+        if (loading) return;
+        if (!user) router.push("/", undefined, { shallow: true });
+        if (user) getUserInfo().then((res) => {
+            setUserInfo(res[0]);
+        })
+    }, [user, loading]);
+
+    const userName = user?.displayName;
+
     return (
         <main style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
-            {currUser == "umer" && (
-                <>
-                    <Box style={{ boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)', borderRadius: '15px', marginLeft: '15px', marginRight: '15px', marginTop: '20px', textAlign: 'center', minWidth: '390px' }}>
-                        <br />
-                        <Typography style={{ textAlign: 'center', fontSize: '30px', fontFamily: 'futura, sans serif', fontWeight: '600' }}>
-                            Welcome Umer
-                        </Typography>
-                        <br />
-                    </Box>
-                    <Box style={{ boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)', borderRadius: '15px', marginLeft: '15px', marginRight: '15px', marginTop: '20px', textAlign: 'center', width: '390px' }}>
-                        <br />
-                        <br />
-                        <Image src={umerCar} width="350" height="115" />
-                        <br />
-                        <Typography style={{ fontWeight: 'bold' }}>
-                            2022 BMW 330i xDrive
-                        </Typography>
-                        <br />
-                    </Box>
-                </>
-            )}
-            {currUser == "abeer" && (
-                <>
-                    <Box style={{ boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)', borderRadius: '15px', marginLeft: '15px', marginRight: '15px', marginTop: '20px', textAlign: 'center', minWidth: '390px' }}>
-                        <br />
-                        <Typography style={{ textAlign: 'center', fontSize: '30px', fontFamily: 'futura, sans serif', fontWeight: '600' }}>
-                            Welcome Abeer
-                        </Typography>
-                        <br />
-                    </Box>
-                    <Box style={{ boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)', borderRadius: '15px', marginLeft: '15px', marginRight: '15px', marginTop: '20px', textAlign: 'center', width: '390px' }}>
-                        <br />
-                        <br />
-                        <Image src={abeerCar} width="350" height="115" />
-                        <br />
-                        <Typography style={{ fontWeight: 'bold' }}>
-                            2022 Ford Mustang GT
-                        </Typography>
-                        <br />
-                    </Box>
-                </>
-            )}
+            <Box style={{ boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)', borderRadius: '15px', marginLeft: '15px', marginRight: '15px', marginTop: '20px', textAlign: 'center', minWidth: '390px' }}>
+                <br />
+                <Typography style={{ textAlign: 'center', fontSize: '30px', fontFamily: 'futura, sans serif', fontWeight: '600' }}>
+                    Welcome {userName}
+                </Typography>
+                <br />
+            </Box>
+            <Box style={{ boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)', borderRadius: '15px', marginLeft: '15px', marginRight: '15px', marginTop: '20px', textAlign: 'center', width: '390px' }}>
+                <br />
+                <br />
+                <Image src={umerCar} width="350" height="115" />
+                <br />
+                <Typography style={{ fontWeight: 'bold' }}>
+                    2022 BMW 330i xDrive
+                </Typography>
+                <br />
+            </Box>
+            <Box style={{ boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)', borderRadius: '15px', marginLeft: '15px', marginRight: '15px', marginTop: '20px', textAlign: 'center', width: '390px' }}>
+                <Typography style={{ fontFamily: 'Futura, sans serif', fontSize: '24px', marginLeft: '15px', marginRight: '15px' }}>
+                    <br />
+                    <Button variant="contained" style={{ width: '90%', height: '60px', fontFamily: 'futura, sans serif', fontSize: '18px', letterSpacing: '3px', backgroundColor: '#2596be' }}>Set Your Car</Button>
+                    <br />
+                    <br />
+                </Typography>
+            </Box>
             {!carWashUsed && (
                 <Box style={{ boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)', borderRadius: '15px', marginLeft: '15px', marginRight: '15px', marginTop: '20px', textAlign: 'center', width: '390px' }}>
                     <Typography style={{ fontFamily: 'Futura, sans serif', fontSize: '24px', marginLeft: '15px', marginRight: '15px' }}>
@@ -119,6 +118,14 @@ const Dashboard: NextPage = () => {
                 <Typography style={{ fontFamily: 'Futura, sans serif', fontSize: '24px', marginLeft: '15px', marginRight: '15px' }}>
                     <br />
                     {totalDays} Days Remaining
+                    <br />
+                    <br />
+                </Typography>
+            </Box>
+            <Box style={{ boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)', borderRadius: '15px', marginLeft: '15px', marginRight: '15px', marginTop: '20px', textAlign: 'center', width: '390px' }}>
+                <Typography style={{ fontFamily: 'Futura, sans serif', fontSize: '24px', marginLeft: '15px', marginRight: '15px' }}>
+                    <br />
+                    <Button onClick={logout} variant="contained" style={{ width: '90%', height: '60px', fontFamily: 'futura, sans serif', fontSize: '18px', letterSpacing: '3px', backgroundColor: '#D24335' }}>Log Out</Button>
                     <br />
                     <br />
                 </Typography>

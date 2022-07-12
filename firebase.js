@@ -49,6 +49,7 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 const db = getFirestore(app);
 
 const useCarWash = async (name) => {
@@ -90,6 +91,8 @@ const useCarWash = async (name) => {
         lastName,
         phoneNumber,
         email,
+        car: "",
+        carImg: "",
         photoURL: 'https://i.pinimg.com/474x/f1/da/a7/f1daa70c9e3343cebd66ac2342d5be3f.jpg',
       })
       await updateProfile(user, {
@@ -108,15 +111,54 @@ const logInWithEmailAndPassword = async (email, password) => {
       alert("Incorrect Password, Please Try Again");
     } else if (err == "FirebaseError: Firebase: Access to this account has been temporarily disabled due to many failed login attempts. You can immediately restore it by resetting your password or you can try again later. (auth/too-many-requests).") {
       alert("Too Many Failed Login Attempts, Please Reset Your Password or Try Again Later");
-    } else {
-      alert(err);
+    } else if (err == "FirebaseError: Firebase: Error (auth/email-already-in-use).") {
+      alert("Email Already In Use");
     }
   }
 };
+
+const getUserInfo = async () => {
+  const user = getAuth().currentUser
+  const q1 = query(collection(db, "users"), where("uid", "==", user.uid));
+  const querySnapshot = await getDocs(q1);
+  let userInfo = [];
+  querySnapshot.forEach((doc) => {
+    userInfo.push(doc.data());
+  })
+  return userInfo;
+}
+
+const setCar = async (make, model, year) => {
+  const user = getAuth().currentUser
+  const usersRef = doc(db, "users", user.uid);
+  await updateDoc(usersRef, {
+    "car": year + " " + make + " " + model
+  })
+}
+
+const getCar = async () => {
+  const user = getAuth().currentUser
+  const q1 = query(collection(db, "users"), where("uid", "==", user.uid));
+  const querySnapshot = await getDocs(q1);
+  let car = [];
+  querySnapshot.forEach((doc) => {
+    car.push(doc.data().car);
+  })
+  return car;
+}
+
+const logout = () => {
+  signOut(auth);
+}
 
   export {
     useCarWash,
     getCarWash,
     registerWithEmailAndPassword,
-    logInWithEmailAndPassword
+    logInWithEmailAndPassword,
+    logout,
+    setCar,
+    getCar,
+    getUserInfo,
+    auth,
   }

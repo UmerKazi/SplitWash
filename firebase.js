@@ -131,9 +131,25 @@ const getUserInfo = async () => {
 const setCar = async (make, model, year) => {
   const user = getAuth().currentUser
   const usersRef = doc(db, "users", user.uid);
-  await updateDoc(usersRef, {
-    "car": year + " " + make + " " + model
-  })
+  const bmwCarImg = "https://firebasestorage.googleapis.com/v0/b/splitwash-22737.appspot.com/o/g20.png?alt=media&token=77d8d8ca-9bcf-4e24-b3e1-86cd4d396d68";
+  const defaultCarImg = "https://firebasestorage.googleapis.com/v0/b/splitwash-22737.appspot.com/o/defaultCar.png?alt=media&token=c5f34232-befb-4bcc-a863-40d10756599d";
+  try {
+    await updateDoc(usersRef, {
+      "car": year + " " + make + " " + model
+    })
+    if ((year + " " + make + " " + model) == "2022 BMW 330i xDrive") {
+      await updateDoc(usersRef, {
+        "carImg": bmwCarImg
+      })
+    } else {
+      await updateDoc(usersRef, {
+        "carImg": defaultCarImg
+      })
+    }
+  } catch (err) {
+    console.log(err);
+  }
+  
 }
 
 const getCar = async () => {

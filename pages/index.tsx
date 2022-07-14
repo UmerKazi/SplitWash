@@ -157,10 +157,11 @@ const Home: NextPage = () => {
             <Tab label="Sign Up" style={{ width: '190px', color: 'black' }} />
           </Tabs>
         </Box>
-        <br />
-        <br />
+
         {value == 0 && (
           <>
+            <br />
+            <br />
             <Typography style={{ fontFamily: 'futura, sans serif', fontSize: '36px' }}>
               Sign In
             </Typography>
@@ -183,10 +184,14 @@ const Home: NextPage = () => {
                 </p>
               </>
             )}
+            <br />
+            <br />
           </>
         )}
         {value == 1 && (
           <>
+            <br />
+            <br />
             <Typography style={{ fontFamily: 'futura, sans serif', fontSize: '36px' }}>
               Sign Up
             </Typography>

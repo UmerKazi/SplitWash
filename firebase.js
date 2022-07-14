@@ -131,7 +131,12 @@ const getUserInfo = async () => {
 const setCar = async (make, model, year) => {
   const user = getAuth().currentUser
   const usersRef = doc(db, "users", user.uid);
-  const bmwCarImg = "https://firebasestorage.googleapis.com/v0/b/splitwash-22737.appspot.com/o/g20.png?alt=media&token=77d8d8ca-9bcf-4e24-b3e1-86cd4d396d68";
+  const umerCarImg = "https://firebasestorage.googleapis.com/v0/b/splitwash-22737.appspot.com/o/g20.png?alt=media&token=77d8d8ca-9bcf-4e24-b3e1-86cd4d396d68";
+  const babaCarImg = "https://firebasestorage.googleapis.com/v0/b/splitwash-22737.appspot.com/o/s560.png?alt=media&token=5f52a11a-5f8e-4ef8-9a34-a06a073650b0";
+  const abeerCarImg = "https://firebasestorage.googleapis.com/v0/b/splitwash-22737.appspot.com/o/gt.png?alt=media&token=8f28b373-4637-44f7-956b-e2a66b6195d8";
+  const mamaCarImg = "https://firebasestorage.googleapis.com/v0/b/splitwash-22737.appspot.com/o/lx600.png?alt=media&token=1f5e99ad-102f-460c-8e5b-3a376110d344";
+  const zaraCarImg = "https://firebasestorage.googleapis.com/v0/b/splitwash-22737.appspot.com/o/sentra.png?alt=media&token=d02a2791-dd1b-4cc4-a5be-b62fc4d05ba8";
+  const taniaCarImg = "https://firebasestorage.googleapis.com/v0/b/splitwash-22737.appspot.com/o/crosstrek.png?alt=media&token=5d2e99be-b7d4-4ca0-8598-2a0c0c768700";
   const defaultCarImg = "https://firebasestorage.googleapis.com/v0/b/splitwash-22737.appspot.com/o/defaultCar.png?alt=media&token=c5f34232-befb-4bcc-a863-40d10756599d";
   try {
     await updateDoc(usersRef, {
@@ -139,9 +144,31 @@ const setCar = async (make, model, year) => {
     })
     if ((year + " " + make + " " + model) == "2022 BMW 330i xDrive") {
       await updateDoc(usersRef, {
-        "carImg": bmwCarImg
+        "carImg": umerCarImg
       })
-    } else {
+    } else if ((year + " " + make + " " + model) == "2022 Ford Mustang GT") {
+      await updateDoc(usersRef, {
+        "carImg": abeerCarImg
+      })
+    } else if ((year + " " + make + " " + model) == "2020 Mercades-Benz S560") {
+      await updateDoc(usersRef, {
+        "carImg": babaCarImg
+      })
+    } else if ((year + " " + make + " " + model) == "2022 Lexus LX600") {
+      await updateDoc(usersRef, {
+        "carImg": mamaCarImg
+      })
+    } else if ((year + " " + make + " " + model) == "2022 Nissan Sentra") {
+      await updateDoc(usersRef, {
+        "carImg": zaraCarImg
+      })
+    } else if ((year + " " + make + " " + model) == "2020 Subaru Crosstrek") {
+      await updateDoc(usersRef, {
+        "carImg": taniaCarImg
+      })
+    } 
+    
+    else {
       await updateDoc(usersRef, {
         "carImg": defaultCarImg
       })

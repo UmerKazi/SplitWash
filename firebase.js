@@ -93,6 +93,7 @@ const useCarWash = async (name) => {
         email,
         car: "",
         carImg: "",
+        group: "",
         photoURL: 'https://i.pinimg.com/474x/f1/da/a7/f1daa70c9e3343cebd66ac2342d5be3f.jpg',
       })
       await updateProfile(user, {
@@ -194,6 +195,55 @@ const logout = () => {
   signOut(auth);
 }
 
+const createGroup = async (dateBought, username, password) => {
+  const user = getAuth().currentUser
+  const usersRef = doc(db, "users", user.uid);
+  const groupID = '_' + Math.random().toString(36).substr(2, 9);
+  try {
+    await setDoc(doc(db, "groups", groupID), {
+      admin: user.uid,
+      adminName: user.displayName,
+      dateBought,
+      username,
+      password,
+      days: [],
+      members: [],
+      groupID,
+    })
+    await updateDoc(usersRef, {
+      "group": groupID
+    });
+  } catch {
+    console.log(err);
+  }
+}
+
+const joinGroup = async (groupID) => {
+  const user = getAuth().currentUser
+  const usersRef = doc(db, "users", user.uid);
+  const groupRef = doc(db, "groups", groupID);
+  await updateDoc(usersRef, {
+    "group": groupID
+  });
+  await updateDoc(groupRef, {
+    members: arrayUnion(user.uid)
+  });
+}
+
+const verifyGroup = async (groupID) => {
+  const q1 = query(collection(db, "groups"), where("groupID", "==", groupID));
+  const querySnapshot = await getDocs(q1);
+  let groups = [];
+  querySnapshot.forEach((doc) => {
+    groups.push(doc.data());
+  })
+  if (groups.length > 0) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
   export {
     useCarWash,
     getCarWash,
@@ -204,4 +254,7 @@ const logout = () => {
     getCar,
     getUserInfo,
     auth,
+    createGroup,
+    joinGroup,
+    verifyGroup,
   }

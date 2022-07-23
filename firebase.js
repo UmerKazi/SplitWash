@@ -1,4 +1,5 @@
 // Import the functions you need from the SDKs you need
+import { Today } from "@mui/icons-material";
 import { initializeApp } from "firebase/app";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -52,34 +53,6 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-const useCarWash = async (name) => {
-    const todayDate = new Date()
-    todayDate.setTime(todayDate.getTime() + todayDate.getTimezoneOffset() * 60 * 1000);
-    const offset = -240;
-    const todayDateEST = new Date(todayDate.getTime() + offset * 60 * 1000);
-    const today = todayDateEST.toISOString().slice(0, 10);
-    try {
-      await setDoc(doc(db, "days", today), {
-        name: name,
-        used: true,
-        date: today,
-        fullDate: todayDateEST,
-      })
-    } catch (err) {
-      console.log(err);
-    }
-  }
-
-  const getCarWash = async (date) => {
-    const q1 = query(collection(db, "days"), where("date", "==", date));
-    const querySnapshot = await getDocs(q1);
-    let days = [];
-    querySnapshot.forEach((doc) => {
-      days.push(doc.data());
-    })
-    return days;
-  }
-
   const registerWithEmailAndPassword = async (email, password, firstName, lastName, phoneNumber) => {
     try {
       const res = await createUserWithEmailAndPassword(auth, email, password);
@@ -97,7 +70,7 @@ const useCarWash = async (name) => {
         photoURL: 'https://i.pinimg.com/474x/f1/da/a7/f1daa70c9e3343cebd66ac2342d5be3f.jpg',
       })
       await updateProfile(user, {
-        'displayName': firstName
+        'displayName': firstName + ' ' + lastName
       });
     } catch (err) {
       console.log(err);
@@ -118,9 +91,8 @@ const logInWithEmailAndPassword = async (email, password) => {
   }
 };
 
-const getUserInfo = async () => {
-  const user = getAuth().currentUser
-  const q1 = query(collection(db, "users"), where("uid", "==", user.uid));
+const getUserInfo = async (uid) => {
+  const q1 = query(collection(db, "users"), where("uid", "==", uid));
   const querySnapshot = await getDocs(q1);
   let userInfo = [];
   querySnapshot.forEach((doc) => {
@@ -207,7 +179,7 @@ const createGroup = async (dateBought, username, password) => {
       username,
       password,
       days: [],
-      members: [],
+      members: [user.displayName],
       groupID,
     })
     await updateDoc(usersRef, {
@@ -226,7 +198,7 @@ const joinGroup = async (groupID) => {
     "group": groupID
   });
   await updateDoc(groupRef, {
-    members: arrayUnion(user.uid)
+    members: arrayUnion(user.displayName)
   });
 }
 
@@ -244,6 +216,35 @@ const verifyGroup = async (groupID) => {
   }
 }
 
+const getGroupInfo = async (groupID) => {
+  const q1 = query(collection(db, "groups"), where("groupID", "==", groupID));
+  const querySnapshot = await getDocs(q1);
+  let groupInfo = [];
+  querySnapshot.forEach((doc) => {
+    groupInfo.push(doc.data());
+  })
+  return groupInfo;
+}
+
+const useCarWash = async (day, groupID) => {
+  const user = getAuth().currentUser;
+  const groupRef = doc(db, "groups", groupID);
+  await updateDoc(groupRef, {
+    days: arrayUnion(day+'-'+user.displayName)
+  });
+}
+
+const getCarWash = async (day, groupID) => {
+  const q1 = query(collection(db, "groups"), where("groupID", "==", groupID));
+  const querySnapshot = await getDocs(q1);
+  let groupInfo = [];
+  querySnapshot.forEach((doc) => {
+    groupInfo.push(doc.data().days);
+  })
+  return groupInfo;
+}
+
+
   export {
     useCarWash,
     getCarWash,
@@ -257,4 +258,5 @@ const verifyGroup = async (groupID) => {
     createGroup,
     joinGroup,
     verifyGroup,
+    getGroupInfo,
   }

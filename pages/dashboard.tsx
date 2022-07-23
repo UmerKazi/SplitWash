@@ -2,7 +2,7 @@ import React from 'react'
 import { Button, FormControl, FormControlLabel, FormLabel, Modal, Radio, RadioGroup, TextField, Typography } from '@mui/material'
 import { Box } from '@mui/system'
 import type { NextPage } from 'next'
-import { useCarWash, getCarWash, logout, auth, getUserInfo, setCar, createGroup, joinGroup, verifyGroup } from '../firebase.js';
+import { useCarWash, getCarWash, logout, auth, getUserInfo, setCar, createGroup, joinGroup, verifyGroup, getGroupInfo } from '../firebase.js';
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
 import { useAuthState } from 'react-firebase-hooks/auth';
@@ -13,45 +13,16 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import Avatar from '@mui/material/Avatar';
 import Stack from '@mui/material/Stack';
 
+function addDays(date: any) {
+    var result = new Date(date);
+    result.setDate(result.getDate() + 90);
+    return result;
+}
 
 const Dashboard: NextPage = () => {
     const router = useRouter();
     const [currUser, setCurrUser] = React.useState("");
-    const [carWashUsed, setCarWashUsed] = React.useState(false);
     const [carWashUser, setCarWashUser] = React.useState("");
-    const [clicked, setClicked] = React.useState(false);
-    const endDate = new Date('09/13/2022')
-    const todayDate = new Date()
-    todayDate.setTime(todayDate.getTime() + todayDate.getTimezoneOffset() * 60 * 1000);
-    const offset = -240;
-    const todayDateEST = new Date(todayDate.getTime() + offset * 60 * 1000);
-    const stringDate = todayDateEST.toString();
-    const today = todayDateEST.toISOString().slice(0, 10);
-    const difference = endDate.getTime() - todayDate.getTime()
-    const totalDays = Math.ceil(difference / (1000 * 3600 * 24))
-    const useWash = () => {
-        setClicked(true);
-        useCarWash(currUser);
-    }
-    React.useEffect(() => {
-        if (localStorage.getItem("user") == "umer") {
-            setCurrUser("umer");
-        }
-        if (localStorage.getItem("user") == "abeer") {
-            setCurrUser("abeer");
-        }
-        getCarWash(today).then((res) => {
-            if (res[0]?.used == true) {
-                setCarWashUsed(true);
-                if (res[0].name == "umer") {
-                    setCarWashUser("Umer");
-                }
-                if (res[0].name == "abeer") {
-                    setCarWashUser("Abeer");
-                }
-            }
-        })
-    }, [clicked])
 
     // firebase
 
@@ -65,6 +36,10 @@ const Dashboard: NextPage = () => {
     const [groupDateBought, setGroupDateBought] = React.useState("");
     const [groupUsername, setGroupUsername] = React.useState("");
     const [groupPassword, setGroupPassword] = React.useState("");
+    const [groupMembers, setGroupMembers] = React.useState<Array<any>>([]);
+    const [groupMembersInfo, setGroupMembersInfo] = React.useState([]);
+    const [groupCarWashUsed, setGroupCarWashUsed] = React.useState(false);
+    const [groupCarWashUser, setGroupCarWashUser] = React.useState("");
 
     const [setCarError, setSetCarError] = React.useState("");
     const [createGroupError, setCreateGroupError] = React.useState("");
@@ -117,7 +92,7 @@ const Dashboard: NextPage = () => {
     };
     const handleCreateGroup = () => {
         if (createGroupFormValues.username !== "" && createGroupFormValues.password !== "") {
-            const date = dateBought?.toISOString().slice(0, 10);
+            const date = dateBought?.toISOString().slice(0, 10).split('-').join('/');
             createGroup(date, createGroupFormValues.username, createGroupFormValues.password);
             setCreateGroupFormValues({ username: "", password: "" })
             handleCloseCreateGroup();
@@ -155,15 +130,51 @@ const Dashboard: NextPage = () => {
         }
     }
 
+    const endDate = addDays(groupDateBought);
+    const todayDate = new Date()
+    todayDate.setTime(todayDate.getTime() + todayDate.getTimezoneOffset() * 60 * 1000);
+    const offset = -240;
+    const todayDateEST = new Date(todayDate.getTime() + offset * 60 * 1000);
+    const stringDate = todayDateEST.toString();
+    const today = todayDateEST.toISOString().slice(0, 10).split('-').join('/');
+    const difference = endDate.getTime() - todayDate.getTime()
+    const totalDays = Math.ceil(difference / (1000 * 3600 * 24))
+
     React.useEffect(() => {
         if (loading) return;
         if (!user) router.push("/", undefined, { shallow: true });
-        if (user) getUserInfo().then((res) => {
-            setUserCarImg(res[0].carImg);
-            setUserCar(res[0].car);
-            setUserCarWashGroup(res[0].group);
-        })
+        if (user) {
+            getUserInfo(user.uid).then((res) => {
+                setUserCarImg(res[0].carImg);
+                setUserCar(res[0].car);
+                setUserCarWashGroup(res[0].group);
+            })
+            if (userCarWashGroup) {
+                getGroupInfo(userCarWashGroup).then((res) => {
+                    setGroupAdminName(res[0].adminName);
+                    setGroupDateBought(res[0].dateBought);
+                    setGroupUsername(res[0].userName);
+                    setGroupPassword(res[0].password);
+                    setGroupMembers(res[0].members);
+                })
+                getCarWash(today, userCarWashGroup).then((res) => {
+                    for (let i = 0; i < res.length; i++) {
+                        if (res[0][i].toString().split('-')[0] == today) {
+                            setGroupCarWashUsed(true);
+                            setGroupCarWashUser(res[0][i].toString().split('-')[1]);
+                        }
+                    }
+                });
+
+
+            }
+        }
+
     }, [user, loading]);
+
+    const useWash = () => {
+        useCarWash(today, userCarWashGroup);
+    }
 
     return (
         <main style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
@@ -179,7 +190,7 @@ const Dashboard: NextPage = () => {
             </Box>
 
             {/* User Car Card **Done** */}
-            {/* !! Add Change Functionality !! */}
+            {/* !! Add Change Car Functionality !! */}
 
             {userCar == "" && (
                 <Box style={{ boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)', borderRadius: '15px', marginLeft: '15px', marginRight: '15px', marginTop: '20px', textAlign: 'center', width: '390px' }}>
@@ -208,7 +219,7 @@ const Dashboard: NextPage = () => {
 
             {userCarWashGroup == "" && (
                 <Box style={{ boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)', borderRadius: '15px', marginLeft: '15px', marginRight: '15px', marginTop: '20px', textAlign: 'center', width: '390px' }}>
-                    {/* Join Car Wash Group Card */}
+                    {/* Join/Create Car Wash Group Card **Done** */}
                     <Typography style={{ fontFamily: 'Futura, sans serif', fontSize: '24px', marginLeft: '15px', marginRight: '15px' }}>
                         <br />
                         You Are Not Part Of A Group
@@ -224,11 +235,11 @@ const Dashboard: NextPage = () => {
             {userCarWashGroup !== "" && (
                 <>
                     {/* Use Car Wash Card */}
-                    {!carWashUsed && (
+                    {!groupCarWashUsed && (
                         <Box style={{ boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)', borderRadius: '15px', marginLeft: '15px', marginRight: '15px', marginTop: '20px', textAlign: 'center', width: '390px' }}>
                             <Typography style={{ fontFamily: 'Futura, sans serif', fontSize: '24px', marginLeft: '15px', marginRight: '15px' }}>
                                 <br />
-                                Your Day To Wash
+                                Use The Car Wash Today!
                                 <br />
                                 <Button variant="contained" onClick={useWash} style={{ width: '90%', height: '60px', backgroundColor: "#2596be", fontFamily: 'futura, sans serif', fontSize: '18px', letterSpacing: '3px', marginTop: '15px' }}>Claim</Button>
                                 <br />
@@ -237,11 +248,11 @@ const Dashboard: NextPage = () => {
                         </Box>
                     )}
                     {/* Used Car Wash Card */}
-                    {carWashUsed && (
+                    {groupCarWashUsed && (
                         <Box style={{ boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)', borderRadius: '15px', marginLeft: '15px', marginRight: '15px', marginTop: '20px', textAlign: 'center', width: '390px' }}>
                             <Typography style={{ fontFamily: 'Futura, sans serif', fontSize: '24px', marginLeft: '15px', marginRight: '15px' }}>
                                 <br />
-                                Car Wash Was Used By {carWashUser} <br />Come Back Tomorrow!
+                                Car Wash Was Used<br /> By {groupCarWashUser} <br />Come Back Tomorrow!
                                 <br />
                                 <Button variant="contained" disabled style={{ width: '90%', height: '60px', fontFamily: 'futura, sans serif', fontSize: '18px', letterSpacing: '3px', marginTop: '15px' }}>Claimed</Button>
                                 <br />
@@ -252,7 +263,7 @@ const Dashboard: NextPage = () => {
                     {/* Group Info */}
                     {/* Leave Group Functionality */}
 
-                    {groupAdminName !== user?.displayName && (
+                    {groupAdminName == user?.displayName && (
                         <Box style={{ boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)', borderRadius: '15px', marginLeft: '15px', marginRight: '15px', marginTop: '20px', textAlign: 'center', width: '390px' }}>
                             <Typography style={{ fontFamily: 'Futura, sans serif', fontSize: '24px', marginLeft: '15px', marginRight: '15px' }}>
                                 <br />
@@ -260,33 +271,53 @@ const Dashboard: NextPage = () => {
                                 <br />
                             </Typography>
                             <br />
-                            <Box style={{ boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)', borderRadius: '15px', margin: "0 auto", textAlign: 'center', width: '300px', height: '60px' }}>
-                                <Stack direction="row">
-                                    <Avatar style={{ marginLeft: '40px', marginTop: '10px' }}>U</Avatar>
-                                    <Typography style={{ marginLeft: '30px', marginTop: '18px' }} >Umer Kazi</Typography>
-                                </Stack>
-                            </Box>
+                            {groupMembers.map((displayName, index) => (
+                                <>
+                                    <Box key={displayName} style={{ boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)', borderRadius: '15px', margin: "0 auto", textAlign: 'center', width: '300px', height: '60px' }}>
+                                        <Stack direction="row">
+                                            <Avatar style={{ marginLeft: '40px', marginTop: '10px' }}>{displayName[0]}</Avatar>
+                                            <Typography style={{ marginLeft: '30px', marginTop: '18px' }} >{displayName}</Typography>
+                                        </Stack>
+                                    </Box>
+                                    <br />
+                                </>
+                            ))}
                             <br />
-                            <Box style={{ boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)', borderRadius: '15px', margin: "0 auto", textAlign: 'center', width: '300px', height: '60px' }}>
-                                <Stack direction="row">
-                                    <Avatar style={{ marginLeft: '40px', marginTop: '10px' }}>A</Avatar>
-                                    <Typography style={{ marginLeft: '30px', marginTop: '18px' }} >Abeer Kazi</Typography>
-                                </Stack>
-                            </Box>
-                            <br />
-                            <br />
+
                         </Box>
                     )}
-                    {groupAdminName == user?.displayName && (
+                    {groupAdminName !== user?.displayName && (
                         <Box style={{ boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)', borderRadius: '15px', marginLeft: '15px', marginRight: '15px', marginTop: '20px', textAlign: 'center', width: '390px' }}>
                             <Typography style={{ fontFamily: 'Futura, sans serif', fontSize: '24px', marginLeft: '15px', marginRight: '15px' }}>
                                 <br />
                                 {groupAdminName}&apos;s Group
                                 <br />
-                                <br />
                             </Typography>
+                            <br />
+                            {groupMembers.map((displayName, index) => (
+                                <>
+                                    <Box key={displayName} style={{ boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)', borderRadius: '15px', margin: "0 auto", textAlign: 'center', width: '300px', height: '60px' }}>
+                                        <Stack direction="row">
+                                            <Avatar style={{ marginLeft: '40px', marginTop: '10px' }}>{displayName[0]}</Avatar>
+                                            <Typography style={{ marginLeft: '30px', marginTop: '18px' }} >{displayName}</Typography>
+                                        </Stack>
+                                    </Box>
+                                    <br />
+                                </>
+                            ))}
+                            <br />
                         </Box>
                     )}
+
+                    {/* Days Remaining */}
+                    <Box style={{ boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)', borderRadius: '15px', marginLeft: '15px', marginRight: '15px', marginTop: '20px', textAlign: 'center', width: '390px' }}>
+                        <Typography style={{ fontFamily: 'Futura, sans serif', fontSize: '24px', marginLeft: '15px', marginRight: '15px' }}>
+                            <br />
+                            {totalDays} Days Remaining
+                            <br />
+                            <br />
+                        </Typography>
+                    </Box>
                 </>
             )
             }
